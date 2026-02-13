@@ -4,11 +4,11 @@
 # LangChain framework
 langchain>=0.1.0
 
-# OpenAI integration for LangChain
-langchain-openai>=0.0.5
+# LangChain core components
+langchain-core>=0.1.0
+
+# Groq integration for LangChain (FREE tier)
+langchain-groq>=0.1.0
 
 # Environment variables management
 python-dotenv>=1.0.0
-
-# OpenAI Python client (dependency of langchain-openai)
-openai>=1.0.0

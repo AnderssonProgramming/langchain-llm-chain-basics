@@ -2,9 +2,9 @@
 LangChain LLM Chain Basics - Main Application
 
 This script demonstrates the fundamentals of LangChain framework:
-- Setting up OpenAI LLM connection
+- Setting up Groq LLM connection (free tier)
 - Creating prompt templates
-- Building and running LLM chains
+- Building and running LLM chains using LCEL
 - Handling model responses
 
 Author: Andersson David Sánchez Méndez
@@ -12,33 +12,33 @@ Author: Andersson David Sánchez Méndez
 
 import os
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 
 
 def load_environment() -> None:
     """Load environment variables from .env file."""
     load_dotenv()
     
-    if not os.getenv("OPENAI_API_KEY"):
+    if not os.getenv("GROQ_API_KEY"):
         raise ValueError(
-            "OPENAI_API_KEY not found. Please create a .env file with your API key."
+            "GROQ_API_KEY not found. Please create a .env file with your API key."
         )
 
 
-def create_llm(model: str = "gpt-3.5-turbo", temperature: float = 0.7) -> ChatOpenAI:
+def create_llm(model: str = "llama-3.1-8b-instant", temperature: float = 0.7) -> ChatGroq:
     """
-    Initialize the OpenAI LLM.
+    Initialize the Groq LLM.
     
     Args:
-        model: The OpenAI model to use.
+        model: The Groq model to use (free tier options).
         temperature: Controls randomness in responses (0-1).
     
     Returns:
-        Configured ChatOpenAI instance.
+        Configured ChatGroq instance.
     """
-    return ChatOpenAI(model=model, temperature=temperature)
+    return ChatGroq(model=model, temperature=temperature)
 
 
 def create_prompt_template(template: str, input_variables: list) -> PromptTemplate:
@@ -58,18 +58,19 @@ def create_prompt_template(template: str, input_variables: list) -> PromptTempla
     )
 
 
-def create_chain(llm: ChatOpenAI, prompt: PromptTemplate) -> LLMChain:
+def create_chain(llm: ChatGroq, prompt: PromptTemplate):
     """
-    Create an LLM chain combining the model and prompt.
+    Create an LLM chain using LCEL (LangChain Expression Language).
     
     Args:
         llm: The language model instance.
         prompt: The prompt template.
     
     Returns:
-        Configured LLMChain instance.
+        LCEL chain (prompt | llm | output_parser).
     """
-    return LLMChain(llm=llm, prompt=prompt)
+    output_parser = StrOutputParser()
+    return prompt | llm | output_parser
 
 
 def demonstrate_simple_chain() -> None:
@@ -92,7 +93,7 @@ def demonstrate_simple_chain() -> None:
     for topic in topics:
         print(f"\n📚 Topic: {topic}")
         print("-" * 40)
-        response = chain.run(topic)
+        response = chain.invoke({"topic": topic})
         print(response)
 
 
@@ -116,7 +117,7 @@ def demonstrate_creative_chain() -> None:
     
     print("\n✍️ Generating creative story...")
     print("-" * 40)
-    response = chain.run(subject="a robot learning to paint", genre="science fiction")
+    response = chain.invoke({"subject": "a robot learning to paint", "genre": "science fiction"})
     print(response)
 
 
@@ -145,7 +146,7 @@ def demonstrate_structured_output_chain() -> None:
     
     print("\n🔍 Analyzing concept: 'API (Application Programming Interface)'")
     print("-" * 40)
-    response = chain.run(concept="API (Application Programming Interface)")
+    response = chain.invoke({"concept": "API (Application Programming Interface)"})
     print(response)
 
 
@@ -170,11 +171,11 @@ def demonstrate_translation_chain() -> None:
     
     print("\n🌐 Translating text...")
     print("-" * 40)
-    response = chain.run(
-        source_language="English",
-        target_language="Spanish",
-        text="Artificial intelligence is transforming how we interact with technology."
-    )
+    response = chain.invoke({
+        "source_language": "English",
+        "target_language": "Spanish",
+        "text": "Artificial intelligence is transforming how we interact with technology."
+    })
     print(response)
 
 
@@ -211,7 +212,7 @@ def interactive_mode() -> None:
         
         print("\n💡 Response:")
         print("-" * 40)
-        response = chain.run(question=question)
+        response = chain.invoke({"question": question})
         print(response)
 
 
